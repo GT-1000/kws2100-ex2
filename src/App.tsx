@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 
 const PRODUCTS = [
   { category: "Fruits", price: "$1", stocked: true, name: "Apple" },
@@ -7,9 +7,11 @@ const PRODUCTS = [
   { category: "Vegetables", price: "$2", stocked: true, name: "Spinach" },
   { category: "Vegetables", price: "$4", stocked: false, name: "Pumpkin" },
   { category: "Vegetables", price: "$1", stocked: true, name: "Peas" },
-];
+] as const;
 
-function ProductCategoryRow({ category }) {
+type Product = (typeof PRODUCTS)[number];
+
+function ProductCategoryRow({ category }: { category: ReactNode }) {
   return (
     <tr>
       <th colSpan={2}>{category}</th>
@@ -17,7 +19,7 @@ function ProductCategoryRow({ category }) {
   );
 }
 
-function ProductRow({ product }) {
+function ProductRow({ product }: { product: Product }) {
   const name = product.stocked ? (
     product.name
   ) : (
@@ -32,29 +34,36 @@ function ProductRow({ product }) {
   );
 }
 
-function ProductTable({ products, filterText, inStockOnly }) {
-  const rows = [];
-  let lastCategory = null;
+function ProductTable({
+  products,
+  filterText,
+  inStockOnly,
+}: {
+  products: Product[];
+  filterText: string;
+  inStockOnly: boolean;
+}) {
+  const rows: ReactNode[] = [];
+  let lastCategory: ReactNode = null;
 
   products.forEach((product) => {
-    // Filter by text
     if (product.name.toLowerCase().indexOf(filterText.toLowerCase()) === -1) {
       return;
     }
-    // Filter by stock checkbox
     if (inStockOnly && !product.stocked) {
       return;
     }
 
-    // Category header
     if (product.category !== lastCategory) {
       rows.push(
-        <ProductCategoryRow category={product.category} key={product.category} />,
+        <ProductCategoryRow
+          category={product.category}
+          key={product.category}
+        />,
       );
       lastCategory = product.category;
     }
 
-    // Product row
     rows.push(<ProductRow product={product} key={product.name} />);
   });
 
@@ -76,6 +85,11 @@ function SearchBar({
   inStockOnly,
   onFilterTextChange,
   onInStockOnlyChange,
+}: {
+  filterText: string;
+  inStockOnly: boolean;
+  onFilterTextChange: (value: string) => void;
+  onInStockOnlyChange: (value: boolean) => void;
 }) {
   return (
     <form>
@@ -97,7 +111,7 @@ function SearchBar({
   );
 }
 
-function FilterableProductTable({ products }) {
+function FilterableProductTable({ products }: { products: Product[] }) {
   const [filterText, setFilterText] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -119,5 +133,5 @@ function FilterableProductTable({ products }) {
 }
 
 export default function App() {
-  return <FilterableProductTable products={PRODUCTS} />;
+  return <FilterableProductTable products={[...PRODUCTS]} />;
 }
